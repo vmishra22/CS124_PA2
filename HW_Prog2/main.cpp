@@ -24,32 +24,32 @@ void RunStandardMatrixMultiplication(const int& dimension, const vector<int>& ma
 	}
 }
 
-vector<int> RunStrassenMatrixMultiplication(const int& originalDimension, int& dimension, vector<int>& matA, int rowAS, int colAS, 
+vector<int> RunStrassenMatrixMultiplication(const int& originalDimension, int& dimension, int level, vector<int>& matA, int rowAS, int colAS, 
 										  vector<int>& matB, int rowBS, int colBS) {
 	vector<int> matC(dimension*dimension);
 	if (dimension == 1) {
-		matC[0] = matA[0] * matB[0];
+		matC[0] = matA[rowAS*originalDimension + colAS] * matB[rowBS*originalDimension + colBS];
 	}
 	else {
 		int newDimension = dimension / 2;
-		int k = (originalDimension / newDimension)-1;
+		level++;
 		
-		int nMatrixCoords = originalDimension / ((int)pow(2, k));
+		int nMatrixCoords = originalDimension / ((int)pow(2, level));
 		vector<int> tempC1(newDimension*newDimension);
-		tempC1 = RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS, colAS, matB, rowBS, colBS) +
-			RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS);
+		tempC1 = RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS, matB, rowBS, colBS) +
+			RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS);
 
 		vector<int> tempC2(newDimension*newDimension);
-		tempC2 = RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS, colAS, matB, rowBS, colBS+nMatrixCoords) +
-			RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS+nMatrixCoords);
+		tempC2 = RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS, matB, rowBS, colBS+nMatrixCoords) +
+			RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS+nMatrixCoords);
 
 		vector<int> tempC3(newDimension*newDimension);
-		tempC3 = RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS+nMatrixCoords, colAS, matB, rowBS, colBS) +
-			RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS+nMatrixCoords, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS);
+		tempC3 = RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS+nMatrixCoords, colAS, matB, rowBS, colBS) +
+			RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS+nMatrixCoords, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS);
 
 		vector<int> tempC4(newDimension*newDimension);
-		tempC4 = RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS+nMatrixCoords, colAS, matB, rowBS, colBS+nMatrixCoords) +
-			RunStrassenMatrixMultiplication(originalDimension, newDimension, matA, rowAS+nMatrixCoords, rowAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS+nMatrixCoords);
+		tempC4 = RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS+nMatrixCoords, colAS, matB, rowBS, colBS+nMatrixCoords) +
+			RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS+nMatrixCoords, colAS+nMatrixCoords, matB, rowBS+nMatrixCoords, colBS+nMatrixCoords);
 		
 		for (int i = 0; i < newDimension; i++) {
 			for (int j = 0; j < newDimension; j++) {
@@ -124,9 +124,9 @@ int main(int argc, char** argv) {
 	RunStandardMatrixMultiplication(dimension,matrixA,matrixB,matrixC);
 
 	//Strassen Matrix Multiplication
-	RunStrassenMatrixMultiplication(dimension,dimension,matrixA,0,0,matrixB,0,0);
+	vector<int> returnMatrixC = RunStrassenMatrixMultiplication(dimension,dimension,0,matrixA,0,0,matrixB,0,0);
 
 	//Output
-	ProduceOutput(matrixC, dimension);
+	ProduceOutput(returnMatrixC, dimension);
 	return 0;
 }
