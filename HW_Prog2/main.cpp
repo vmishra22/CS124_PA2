@@ -180,6 +180,24 @@ void ProduceOutput(const vector<int>& matC, const int& dimension) {
 	}
 }
 
+void checkIfDimensionPowerofTwo(int dim, int checkNum, bool* retVal, int* modifiedDim) {
+	if (dim == checkNum * 2)
+	{
+		*retVal = true;
+		return;
+	}
+	else if (dim < checkNum * 2)
+	{
+		*modifiedDim = checkNum * 2;
+		*retVal = false;
+		return;
+	}
+	else
+		checkIfDimensionPowerofTwo(dim, checkNum * 2, retVal, modifiedDim);
+
+	return;
+}
+
 int main(int argc, char** argv) {
 	if (argc != 4) {
 		cout << "Incorrect input args list" << endl;
@@ -206,40 +224,78 @@ int main(int argc, char** argv) {
 	if (!(ss1 >> dimension))
 		cerr << "Invalid number for dimension" << argv[2] << '\n';
 
-	vector<int> matrixA(dimension*dimension);
-	vector<int> matrixB(dimension*dimension);
-	//vector<int> matrixC(dimension*dimension);
+	int modifiedDimension = dimension;
+	bool isPowerofTwo = false;
+	checkIfDimensionPowerofTwo(dimension, 1, &isPowerofTwo, &modifiedDimension);
+
+	vector<int> matrixA(modifiedDimension*modifiedDimension);
+	vector<int> matrixB(modifiedDimension*modifiedDimension);
 
 	//Initialise the matrices from the input file
-	vector<int>::iterator rangeIterator;
-	rangeIterator = matrixElements.begin() + (dimension*dimension);
-	int  i = 0;
-	for (vector<int>::iterator it = matrixElements.begin(); it != rangeIterator; ++it) {
-		matrixA[i++] = *it;
+	if (modifiedDimension != dimension) {
+		vector<int>::iterator rangeIterator;
+		rangeIterator = matrixElements.begin() + (dimension*dimension);
+		int  i = 0;
+		int counter = 0;
+		for (vector<int>::iterator it = matrixElements.begin(); it != rangeIterator; ++it) {
+			matrixA[i++] = *it;
+			counter++;
+			if (counter%dimension == 0) {
+				for (int j = dimension; j < modifiedDimension; j++) {
+					matrixA[i++] = 0;
+				}
+			}
+		}
+		i = 0;
+		counter = 0;
+		for (vector<int>::iterator it = rangeIterator; it != matrixElements.end(); ++it) {
+			matrixB[i++] = *it;
+			counter++;
+			if (counter%dimension == 0) {
+				for (int j = dimension; j < modifiedDimension; j++) {
+					matrixB[i++] = 0;
+				}
+			}
+		}
+		for (i = dimension; i < modifiedDimension; i++) {
+			for (int j = 0; j < modifiedDimension; j++) {
+				matrixA[i*modifiedDimension + j] = 0;
+				matrixB[i*modifiedDimension + j] = 0;
+			}
+		}
 	}
-	i = 0;
-	for (vector<int>::iterator it = rangeIterator; it != matrixElements.end(); ++it) {
-		matrixB[i++] = *it;
+	else {
+		vector<int>::iterator rangeIterator;
+		rangeIterator = matrixElements.begin() + (dimension*dimension);
+		int  i = 0;
+		for (vector<int>::iterator it = matrixElements.begin(); it != rangeIterator; ++it) {
+			matrixA[i++] = *it;
+		}
+		i = 0;
+		for (vector<int>::iterator it = rangeIterator; it != matrixElements.end(); ++it) {
+			matrixB[i++] = *it;
+		}
 	}
-	//duration<double, minutes> diff;
-
-	//Standard Matrix Multilication
-	//tStart = steady_clock::now();
-	//RunStandardMatrixMultiplication(dimension,matrixA,matrixB,matrixC);
-	//tEnd = steady_clock::now();
-	////diff = tEnd - tStart;
-	//cout << "Time for Standard multiplication with dimension: " << dimension 
-	//	<< ": " << chrono::duration_cast<chrono::seconds>(tEnd - tStart).count() << " seconds" << endl;
 
 	//Strassen Matrix Multiplication
 	tStart = steady_clock::now();
-	vector<int> returnMatrixC = RunStrassenMatrixMultiplication(dimension, dimension, 0, matrixA, matrixB);
+	vector<int> returnMatrixC = RunStrassenMatrixMultiplication(modifiedDimension, modifiedDimension, 0, matrixA, matrixB);
 	tEnd = steady_clock::now();
 	//diff = tEnd - tStart;
 	cout << "Time for STRASSEN multiplication with dimension: " << dimension << " crossover: " << crossoverSize
 		<< " : " << chrono::duration_cast<chrono::milliseconds>(tEnd - tStart).count() << " seconds" << endl;
 
-	//Output
-	//ProduceOutput(returnMatrixC, dimension);
+	if (modifiedDimension != dimension) {
+		vector<int> matrixC(dimension*dimension);
+		for (int i = 0; i < dimension; i++) {
+			for (int j = 0; j < modifiedDimension; j++) {
+				if( j<dimension)
+					matrixC[i*dimension + j] = returnMatrixC[i*modifiedDimension + j];
+			}
+		}
+		ProduceOutput(matrixC, dimension);
+	}
+	else
+		ProduceOutput(returnMatrixC, dimension);
 	return 0;
 }
