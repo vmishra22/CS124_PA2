@@ -12,7 +12,9 @@
 
 using namespace std;
 
-int crossoverSize = 2;
+//Crossoversize for transition from Strassen to Standard multiplication
+int crossoverSize = 32;
+
 //Standard Matrix Multiplication
 void RunStandardMatrixMultiplication(const int& dimension, const vector<int>& matA, const vector<int>& matB, vector<int>& matC) {
 	int i = 0, j = 0, k = 0, temp = 0;
@@ -25,16 +27,15 @@ void RunStandardMatrixMultiplication(const int& dimension, const vector<int>& ma
 	}
 }
 
+//Strassen Matrix Multiplication
 vector<int> RunStrassenMatrixMultiplication(const int& originalDimension, int& dimension, int level, vector<int>& matA, vector<int>& matB) {
 	vector<int> matC(dimension*dimension);
 	if (dimension <= crossoverSize) {
 		RunStandardMatrixMultiplication(dimension, matA, matB, matC);
-		//matC[0] = matA[0] * matB[0];
 	}
 	else {
 		int newDimension = dimension / 2;
 		level++;
-		//int nPartitionedMatrixCoords = originalDimension / ((int)pow(2, level));
 
 		//Divide the matrices A and B
 		vector<int> A11(newDimension*newDimension); vector<int> A12(newDimension*newDimension);
@@ -109,47 +110,19 @@ vector<int> RunStrassenMatrixMultiplication(const int& originalDimension, int& d
 		//C11=P5+P4-P2+P6
 		vector<int> tempC1(newDimension*newDimension);
 		tempC1 = P5 + P4 - P2 + P6;
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A11 + A22), (B11 + B22)) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, A22, (B21 - B11)) -
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A11 + A12), B22) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A12 - A22), (B21 + B22));*/
-		//
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S5, 0, 0, S6, 0, 0) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS + nPartitionedMatrixCoords, colAS + nPartitionedMatrixCoords, S4, 0, 0) -
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S2, 0, 0, matB, rowBS + nPartitionedMatrixCoords, colBS + nPartitionedMatrixCoords) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S7, 0, 0, S8, 0, 0);*/
-
+		
 		//C12=P1+P2
 		vector<int> tempC2(newDimension*newDimension);
 		tempC2 = P1 + P2;
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, A11, (B12 - B22)) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A11 + A12), B22);*/
-		//
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS, S1, 0, 0) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S2, 0, 0, matB, rowBS+nPartitionedMatrixCoords, colBS+ nPartitionedMatrixCoords);*/
-
+	
 		//C21=P3+P4
 		vector<int> tempC3(newDimension*newDimension);
 		tempC3 = P3 + P4;
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A21 + A22), B11) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, A22, (B21 - B11));*/
-		//
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S3, 0, 0, matB, rowBS, colBS) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS+nPartitionedMatrixCoords, colAS+nPartitionedMatrixCoords, S4, 0, 0);*/
 
 		//C22=P5+P1-P3-P7
 		vector<int> tempC4(newDimension*newDimension);
 		tempC4 = P5 + P1 - P3 - P7;
-		/*RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A11 + A22), (B11 + B22)) +
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, A11, (B12 - B22)) -
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A21 + A22), B11) -
-		RunStrassenMatrixMultiplication(originalDimension, newDimension, level, (A11 - A21), (B11 + B12));*/
-		//
-		//RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S5, 0, 0, S6, 0, 0) +
-		//RunStrassenMatrixMultiplication(originalDimension, newDimension, level, matA, rowAS, colAS, S1, 0, 0) -
-		//RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S3, 0, 0, matB, rowBS, colBS) -
-		//RunStrassenMatrixMultiplication(originalDimension, newDimension, level, S9, 0, 0, S10, 0, 0);
-
+		
 		for (int i = 0; i < newDimension; i++) {
 			for (int j = 0; j < newDimension; j++) {
 				matC[i*dimension + j] = tempC1[i*newDimension + j];
@@ -202,9 +175,9 @@ int main(int argc, char** argv) {
 	if (argc != 4) {
 		cout << "Incorrect input args list" << endl;
 	}
-	using namespace chrono;
-	chrono::steady_clock::time_point tStart;
-	chrono::steady_clock::time_point tEnd;
+	//using namespace chrono;
+	//chrono::steady_clock::time_point tStart;
+	//chrono::steady_clock::time_point tEnd;
 
 	//Read the input file for matrix elements.
 	ifstream file;
@@ -232,6 +205,7 @@ int main(int argc, char** argv) {
 	vector<int> matrixB(modifiedDimension*modifiedDimension);
 
 	//Initialise the matrices from the input file
+	//Pad with zeros when dimension is not power of 2.
 	if (modifiedDimension != dimension) {
 		vector<int>::iterator rangeIterator;
 		rangeIterator = matrixElements.begin() + (dimension*dimension);
@@ -278,13 +252,13 @@ int main(int argc, char** argv) {
 	}
 
 	//Strassen Matrix Multiplication
-	tStart = steady_clock::now();
+	//tStart = steady_clock::now();
 	vector<int> returnMatrixC = RunStrassenMatrixMultiplication(modifiedDimension, modifiedDimension, 0, matrixA, matrixB);
-	tEnd = steady_clock::now();
-	//diff = tEnd - tStart;
-	cout << "Time for STRASSEN multiplication with dimension: " << dimension << " crossover: " << crossoverSize
-		<< " : " << chrono::duration_cast<chrono::milliseconds>(tEnd - tStart).count() << " seconds" << endl;
+	//tEnd = steady_clock::now();
+	/*cout << "Time for STRASSEN multiplication with dimension: " << dimension << " crossover: " << crossoverSize
+		<< " : " << chrono::duration_cast<chrono::milliseconds>(tEnd - tStart).count() << " seconds" << endl;*/
 
+	//Unpadding the zeros in case when dimension is not power of 2
 	if (modifiedDimension != dimension) {
 		vector<int> matrixC(dimension*dimension);
 		for (int i = 0; i < dimension; i++) {

@@ -3,10 +3,10 @@
 # Please see example of "utils" to see how to add additional file
 # to your project
 
-all: randmst
+all: strassen
 
 # C-compiler settings
-CC = g++ 
+CC = g++ -std=c++0x 
 
 # Default optimization level
 O ?= 3
@@ -51,11 +51,11 @@ $(DEPSDIR)/stamp $(BUILDSTAMP):
 # dependency on the right side of whichever one requires the file.
 ##
 
-randmst: main.o Graph.o
+strassen: main.o
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f randmst *.o *~ *.bak core *.core
+	rm -f strassen *.o *~ *.bak core *.core
 	rm -rf .deps
 
 distclean: clean
